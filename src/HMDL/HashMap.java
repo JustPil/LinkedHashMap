@@ -6,6 +6,7 @@ public class HashMap<K, V> implements HashMapInterface<K, V>
     private final int CAPACITY = 1000;
     private int capacity;
     private int totalItems = 0;
+    private final double LOAD_THRESHOLD = .75;
 
     /**
      * Constructor creates a new HashMap with default capacity.
@@ -18,16 +19,16 @@ public class HashMap<K, V> implements HashMapInterface<K, V>
 
     /**
      * Constructor creates a new HashMap with user-defined capacity.
-     * @param c The new capacity for the HashMap.
+     * @param cap The new capacity for the HashMap.
      */
-    public HashMap(int c)
+    public HashMap(int cap)
     {
-        if(c < 0)
+        if(cap < 0)
         {
             throw new IndexOutOfBoundsException("Array cannot have negative capacity.");
         }
-        arr = new Node[c];
-        capacity = c;
+        arr = new Node[cap];
+        capacity = cap;
     }
 
     /**
@@ -48,6 +49,10 @@ public class HashMap<K, V> implements HashMapInterface<K, V>
         {
             arr[index] = insert;
             totalItems++;
+            if((double)(totalItems / capacity) >= LOAD_THRESHOLD)
+            {
+                resize();
+            }
             return true;
         }
         Node<K, V> parser = arr[index];
@@ -60,6 +65,10 @@ public class HashMap<K, V> implements HashMapInterface<K, V>
                     parser.setForward(insert);
                     insert.setBackward(parser);
                     totalItems++;
+                    if((double)(totalItems / capacity) >= LOAD_THRESHOLD)
+                    {
+                        resize();
+                    }
                     return true;
                 }
                 parser = parser.getForward();
@@ -218,5 +227,53 @@ public class HashMap<K, V> implements HashMapInterface<K, V>
     public int size()
     {
         return totalItems;
+    }
+
+    /**
+     * resize Resizes the internal array to double capacity if the original array's load threshold is 75% filled.
+     */
+    private void resize()
+    {
+        capacity *= 2;
+        Node<K, V>[] resizedArray = new Node[capacity];
+        for(int i = 0; i < arr.length; i++)
+        {
+            if(arr[i] != null)
+            {
+                Node<K, V> node = arr[i];
+                putForResizing(node, resizedArray);
+                node = arr[i].getForward();
+                while(node != null)
+                {
+                    putForResizing(node, resizedArray);
+                    node = node.getForward();
+                }
+            }
+        }
+        arr = resizedArray;
+    }
+
+    /**
+     * putForResizing A Put method for the newly resized internal elements array.
+     * @param node The Node to add.
+     * @param resizedArray The newly resized elements array.
+     */
+    private void putForResizing(Node<K, V> node, Node<K, V>[] resizedArray)
+    {
+        int index = Math.abs(node.getKey().hashCode()) % capacity;
+        if(resizedArray[index] == null)
+        {
+            resizedArray[index] = node;
+        }
+        else
+        {
+            Node<K, V> parser = resizedArray[index];
+            while(parser.getForward() != null)
+            {
+                parser = parser.getForward();
+            }
+            parser.setForward(node);
+            node.setBackward(parser);
+        }
     }
 }
