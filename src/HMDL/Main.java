@@ -1,14 +1,14 @@
 package HMDL;
 
-import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 public class Main
 {
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args)
+    {
         Scanner scn = new Scanner(System.in);
-        HashMap<Integer, String> hashmap = new HashMap<>(5);
+        HashMap<Integer, String> hashmap = new HashMap<>(10);
         String choice = "";
         while(!choice.equalsIgnoreCase("X"))
         {
