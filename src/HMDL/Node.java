@@ -1,8 +1,7 @@
 package HMDL;
 
-public class Node<K, V>
-{
-    private Node<K, V> forward = null, backward = null;
+public class Node<K, V> {
+    private Node<K, V> next = null, prev = null;
     private K key;
     private V value;
 
@@ -11,8 +10,7 @@ public class Node<K, V>
      * @param k The input for the Node's kay attribute.
      * @param v The input for the Node's value attribute.
      */
-    public Node(K k, V v)
-    {
+    public Node(K k, V v) {
         key = k;
         value = v;
     }
@@ -21,8 +19,7 @@ public class Node<K, V>
      * setValue Sets the Node's value attribute.
      * @param v The input for the Node's value attribute.
      */
-    public void setValue(V v)
-    {
+    public void setValue(V v) {
         value = v;
     }
 
@@ -30,8 +27,7 @@ public class Node<K, V>
      * setKay Sets the Node's key attribute.
      * @param k The input for the Node's key attribute.
      */
-    public void setKey(K k)
-    {
+    public void setKey(K k) {
         key = k;
     }
 
@@ -39,8 +35,7 @@ public class Node<K, V>
      * getValue Returns the Node's value attribute.
      * @return The Node's value attribute.
      */
-    public V getValue()
-    {
+    public V getValue() {
         return value;
     }
 
@@ -48,44 +43,39 @@ public class Node<K, V>
      * getKey Returns the Node's key attribute.
      * @return The Node's key attribute.
      */
-    public K getKey()
-    {
+    public K getKey() {
         return key;
     }
 
     /**
-     * setForward Sets the Node's forward link.
-     * @param n The input for the Node's forward link.
+     * setForward Sets the Node's next link.
+     * @param n The input for the Node's next link.
      */
-    public void setForward(Node<K, V> n)
-    {
-        forward = n;
+    public void setForward(Node<K, V> n) {
+        next = n;
     }
 
     /**
-     * setBackward Sets the Node's backward link.
-     * @param n The input for the Node's backward link.
+     * setBackward Sets the Node's previous link.
+     * @param n The input for the Node's previous link.
      */
-    public void setBackward(Node<K, V> n)
-    {
-        backward = n;
+    public void setBackward(Node<K, V> n) {
+        prev = n;
     }
 
     /**
-     * getForward Returns the Node's forward link.
-     * @return The Node's forward link.
+     * getForward Returns the Node's next link.
+     * @return The Node's next link.
      */
-    public Node<K, V> getForward()
-    {
-        return forward;
+    public Node<K, V> getForward() {
+        return next;
     }
 
     /**
-     * getBackward Returns the Node's backward link.
-     * @return The Node's backward link.
+     * getBackward Returns the Node's previous link.
+     * @return The Node's previous link.
      */
-    public Node<K, V> getBackward()
-    {
-        return backward;
+    public Node<K, V> getBackward() {
+        return prev;
     }
 }
