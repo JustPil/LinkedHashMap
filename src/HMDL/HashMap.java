@@ -2,6 +2,7 @@ package HMDL;
 
 public class HashMap<K, V> implements HashMapInterface<K, V> {
     private Node<K, V>[] arr;
+    private Node<K, V> front = null, rear = null;
     private final int CAPACITY = 1000;
     private int capacity;
     private int totalItems = 0;
@@ -11,8 +12,7 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
      * Constructor creates a new HashMap with default capacity.
      */
     public HashMap() {
-        arr = new Node[CAPACITY];
-        capacity = CAPACITY;
+        arr = new Node[capacity = CAPACITY];
     }
 
     /**
@@ -23,8 +23,7 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
         if(cap < 0) {
             throw new IndexOutOfBoundsException("Array cannot have negative capacity.");
         }
-        arr = new Node[cap];
-        capacity = cap;
+        arr = new Node[capacity = cap];
     }
 
     /**
@@ -42,27 +41,31 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
         if(arr[index] == null) {
             arr[index] = insert;
             totalItems++;
-            if((double)(totalItems / capacity) >= LOAD_THRESHOLD) {
+            if((double) (totalItems / capacity) >= LOAD_THRESHOLD) {
                 resize();
+            }
+            if(front == null) {
+                front = rear = insert;
+            } else {
+                rear.setForward(insert);
+                rear = rear.getForward();
             }
             return true;
         }
         Node<K, V> parser = arr[index];
-        if(parser != null) {
-            while(true) {
-                if(parser.getForward() == null) {
-                    parser.setForward(insert);
-                    insert.setBackward(parser);
-                    totalItems++;
-                    if((double)(totalItems / capacity) >= LOAD_THRESHOLD) {
-                        resize();
-                    }
-                    return true;
+        while(true) {
+            if(parser.getBackward() == null) {
+                parser.setBackward(insert);
+                totalItems++;
+                if((double) (totalItems / capacity) >= LOAD_THRESHOLD) {
+                    resize();
                 }
-                parser = parser.getForward();
+                rear.setForward(insert);
+                rear = rear.getForward();
+                return true;
             }
+            parser = parser.getBackward();
         }
-        return false;
     }
 
     /**
@@ -82,8 +85,8 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
         while(true) {
             if(parser.getKey().equals(k)) {
                 return parser.getValue();
-            } else if(parser.getForward() != null) {
-                parser = parser.getForward();
+            } else if(parser.getBackward() != null) {
+                parser = parser.getBackward();
             } else {
                 return null;
             }
@@ -103,28 +106,40 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
         if(arr[index] == null) {
             return false;
         }
-        if(arr[index].getKey().equals(k)) {
-            if(arr[index].getForward() == null) {
-                arr[index] = null;
+        if(arr[index] != null && front == rear) {
+            arr[index] = null;
+            front = rear = null;
+            totalItems--;
+            return true;
+        }
+        if(arr[index].getKey().equals(k) && arr[index].getBackward() == null) {
+            if(arr[index] == front) {
+                front = front.getForward();
+            } else if(arr[index] == rear) {
+                Node<K, V> predecessor = findPredecessor(arr[index]);
+                predecessor.setForward(null);
             } else {
-                Node<K, V> temp = arr[index].getForward();
-                arr[index] = temp;
+                Node<K, V> predecessor = findPredecessor(arr[index]);
+                predecessor.setForward(predecessor.getForward().getForward());
             }
+            arr[index] = null;
             totalItems--;
             return true;
         }
         Node<K, V> parser = arr[index];
         while(true) {
-            if(parser.getForward().getKey().equals(k)) {
-                if(parser.getForward().getForward() != null) {
-                    parser.setForward(parser.getForward());
-                } else if(parser.getForward().getForward() == null) {
-                    parser.setForward(null);
+            if(parser.getBackward().getKey().equals(k)) {
+                if(parser.getBackward().getBackward() != null) {
+                    parser.setBackward(parser.getBackward().getBackward());
+                } else if(parser.getBackward().getBackward() == null) {
+                    parser.setBackward(null);
                 }
                 totalItems--;
+                parser = findPredecessor(parser);
+                parser.setForward(parser.getForward().getForward());
                 return true;
-            } else if(parser.getForward() != null) {
-                parser = parser.getForward();
+            } else if(parser.getBackward() != null) {
+                parser = parser.getBackward();
             } else {
                 return false;
             }
@@ -148,11 +163,27 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
         while(true) {
             if(parser.getKey().equals(k)) {
                 return true;
-            } else if(parser.getForward() != null) {
-                parser = parser.getForward();
+            } else if(parser.getBackward() != null) {
+                parser = parser.getBackward();
             } else {
                 return false;
             }
+        }
+    }
+
+    /**
+     * findPredecessor Traverses the Linked List of insertion-ordered elements to find the predecessor of a particular
+     * node. Necessary for deletion of an element.
+     * @param node The node of which to find the predecessor.
+     * @return The predecessor node.
+     */
+    private Node<K, V> findPredecessor(Node<K, V> node) {
+        Node<K, V> parser = front;
+        while(true) {
+            if(parser.getForward() == node) {
+                return parser;
+            }
+            parser = parser.getForward();
         }
     }
 
@@ -181,21 +212,14 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
     }
 
     /**
-     * resize Resizes the internal array to double capacity if the original array's load threshold is 75% filled.
+     * resize Resizes the internal array to double capacity if the original array's load threshold is met or exceeded.
      */
     private void resize() {
-        capacity *= 2;
-        Node<K, V>[] resizedArray = new Node[capacity];
-        for(int i = 0; i < arr.length; i++) {
-            if(arr[i] != null) {
-                Node<K, V> node = arr[i];
-                putForResizing(node, resizedArray);
-                node = arr[i].getForward();
-                while(node != null) {
-                    putForResizing(node, resizedArray);
-                    node = node.getForward();
-                }
-            }
+        Node<K, V>[] resizedArray = new Node[capacity *= 2];
+        Node<K, V> parser = front;
+        while(parser != null) {
+            putForResizing(parser, resizedArray);
+            parser = parser.getForward();
         }
         arr = resizedArray;
     }
@@ -211,11 +235,24 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
             resizedArray[index] = node;
         } else {
             Node<K, V> parser = resizedArray[index];
-            while(parser.getForward() != null) {
-                parser = parser.getForward();
+            while(parser.getBackward() != null) {
+                parser = parser.getBackward();
             }
-            parser.setForward(node);
-            node.setBackward(parser);
+            parser.setBackward(node);
         }
+    }
+
+    /**
+     * getInsertionOrder Returns an array of the Keys in the HashMap by their insertion order.
+     * @return An array of keys in the HashMap ordered by insertion.
+     */
+    public K[] getInsertionOrder() {
+        Node<K, V> parser = front;
+        K[] insertionArr = (K[])new Object[totalItems];
+        for(int i = 0; i < totalItems; i++) {
+            insertionArr[i] = parser.getKey();
+            parser = parser.getForward();
+        }
+        return insertionArr;
     }
 }
