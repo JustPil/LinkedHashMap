@@ -19,7 +19,8 @@ public class Main {
                 "GET - Returns the value matching a key, if present\n3 - REMOVE - Removes a key value pair " +
                 "from the Hash Map\n4 - CONTAINS - Checks if a key is present in the Hash Map\n5 - IS EMPTY " +
                 "Checks if the Hash Map is empty\n6 - IS FULL - Checks if the Hash Map is full\n7 - SIZE - " +
-                "Returns the number of key-value pairs in the Hash Map\nX - Terminate\n\n" + "Enter choice: ");
+                "Returns the number of key-value pairs in the Hash Map\n8 - INSERTION ORDER - Returns the insertion" +
+                "order of the elements\nX - Terminate\n\n" + "Enter choice: ");
     }
 
     /**
@@ -27,7 +28,7 @@ public class Main {
      * @param scn A Scanner object for user input.
      * @param hashmap A HashMap object.
      */
-    public static void testDriver(Scanner scn, HashMapInterface<Integer, String> hashmap) {
+    public static void testDriver(Scanner scn, HashMap<Integer, String> hashmap) {
         String choice = "";
         while(!choice.equalsIgnoreCase("X")) {
             menu();
@@ -60,6 +61,12 @@ public class Main {
                 System.out.println("Is full: " + hashmap.isFull());
             } else if (choice.equals("7")) {
                 System.out.println("Size: " + hashmap.size());
+            } else if(choice.equals("8")) {
+                Object[] arr = hashmap.getInsertionOrder();
+                System.out.println("Insertion order of elements in HashMap:");
+                for(Object val : arr) {
+                    System.out.print(val + " ");
+                }
             } else if (choice.equalsIgnoreCase("X")) {
                 break;
             } else {
