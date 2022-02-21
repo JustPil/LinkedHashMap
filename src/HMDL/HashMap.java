@@ -113,37 +113,10 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
             return true;
         }
         if(arr[index].getKey().equals(k) && arr[index].getBackward() == null) {
-            if(arr[index] == front) {
-                front = front.getForward();
-            } else if(arr[index] == rear) {
-                Node<K, V> predecessor = findPredecessor(arr[index]);
-                predecessor.setForward(null);
-            } else {
-                Node<K, V> predecessor = findPredecessor(arr[index]);
-                predecessor.setForward(predecessor.getForward().getForward());
-            }
-            arr[index] = null;
-            totalItems--;
+            removeEntryAtIndex(index);
             return true;
         }
-        Node<K, V> parser = arr[index];
-        while(true) {
-            if(parser.getBackward().getKey().equals(k)) {
-                if(parser.getBackward().getBackward() != null) {
-                    parser.setBackward(parser.getBackward().getBackward());
-                } else if(parser.getBackward().getBackward() == null) {
-                    parser.setBackward(null);
-                }
-                totalItems--;
-                parser = findPredecessor(parser);
-                parser.setForward(parser.getForward().getForward());
-                return true;
-            } else if(parser.getBackward() != null) {
-                parser = parser.getBackward();
-            } else {
-                return false;
-            }
-        }
+        return removeEntryInCollision(index, k);
     }
 
     /**
@@ -162,6 +135,51 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
         Node<K, V> parser = arr[index];
         while(true) {
             if(parser.getKey().equals(k)) {
+                return true;
+            } else if(parser.getBackward() != null) {
+                parser = parser.getBackward();
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * removeEntryAtIndex Removes an element from the HashMap where there are no collisions.
+     * @param index The index of the target element.
+     */
+    private void removeEntryAtIndex(int index) {
+        if(arr[index] == front) {
+            front = front.getForward();
+        } else if(arr[index] == rear) {
+            Node<K, V> predecessor = findPredecessor(arr[index]);
+            predecessor.setForward(null);
+        } else {
+            Node<K, V> predecessor = findPredecessor(arr[index]);
+            predecessor.setForward(predecessor.getForward().getForward());
+        }
+        arr[index] = null;
+        totalItems--;
+    }
+
+    /**
+     * removeEntryInCollision Removes an element from the HashMap where there are collisions.
+     * @param index The index of the target element.
+     * @param k The key of the target element.
+     * @return True if the element was found and removed, false otherwise.
+     */
+    private boolean removeEntryInCollision(int index, K k) {
+        Node<K, V> parser = arr[index];
+        while(true) {
+            if(parser.getBackward().getKey().equals(k)) {
+                if(parser.getBackward().getBackward() != null) {
+                    parser.setBackward(parser.getBackward().getBackward());
+                } else if(parser.getBackward().getBackward() == null) {
+                    parser.setBackward(null);
+                }
+                totalItems--;
+                parser = findPredecessor(parser);
+                parser.setForward(parser.getForward().getForward());
                 return true;
             } else if(parser.getBackward() != null) {
                 parser = parser.getBackward();
