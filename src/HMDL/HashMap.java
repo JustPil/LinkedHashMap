@@ -52,17 +52,27 @@ public class HashMap<K, V> implements HashMapInterface<K, V> {
             }
             return true;
         }
+        putInCollision(index, insert);
+        return true;
+    }
+
+    /**
+     * putinCollision Puts an element in the HashMap where there is a collision at a specified index.
+     * @param index The index for the element.
+     * @param insert The new element to insert.
+     */
+    private void putInCollision(int index, Node<K, V> insert) {
         Node<K, V> parser = arr[index];
         while(true) {
             if(parser.getBackward() == null) {
                 parser.setBackward(insert);
                 totalItems++;
-                if((double) (totalItems / capacity) >= LOAD_THRESHOLD) {
+                if((double)(totalItems / capacity) >= LOAD_THRESHOLD) {
                     resize();
                 }
                 rear.setForward(insert);
                 rear = rear.getForward();
-                return true;
+                return;
             }
             parser = parser.getBackward();
         }
